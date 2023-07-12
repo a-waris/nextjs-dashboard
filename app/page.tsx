@@ -1,31 +1,73 @@
-import { Card, Title, Text } from '@tremor/react';
-import { queryBuilder } from '../lib/planetscale';
-import Search from './search';
-import UsersTable from './table';
+'use client'; // This is a client component
 
-export const dynamic = 'force-dynamic';
+import { Card, Title, Text } from '@tremor/react';
+import Search from './search';
+import ArticleTable from './table';
+import { useEffect, useState } from 'react';
+import { Article, TArticleList } from './types/article';
+import { signIn, useSession } from 'next-auth/react';
+import useApiClient from './hooks/useApiClient';
+
+// export const dynamic = 'force-dynamic';
 
 export default async function IndexPage({
   searchParams
 }: {
   searchParams: { q: string };
 }) {
+  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const apiClient = useApiClient(process.env.NEXT_PUBLIC_API);
   const search = searchParams.q ?? '';
-  const users = await queryBuilder
-    .selectFrom('users')
-    .select(['id', 'name', 'username', 'email'])
-    .where('name', 'like', `%${search}%`)
-    .execute();
+  const [articlesList, setArticlesList] = useState<TArticleList>();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      signIn();
+    }
+    if (!session) {
+      return;
+    }
+    apiClient
+      ?.get<TArticleList>(
+        `/article/list${search ? +'?freeTextSearch=' + search : ''}`
+      )
+      .then((response) => {
+        setArticlesList(response);
+      })
+      .catch((e) => {
+        console.error(e);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [search, session, status, apiClient]);
+
+  // useEffect(() => {
+  //   apiClient
+  //     ?.get<TArticleList>(`/article/list?freeTextSearch=${search}`)
+  //     .then((response) => {
+  //       setArticlesList(response);
+  //     })
+  //     .catch((e) => {
+  //       console.error(e);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // }, [search]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      <Title>Users</Title>
-      <Text>
-        A list of users retrieved from a MySQL database (PlanetScale).
-      </Text>
+      <Title>Articles</Title>
+      <Text>Manage Articles</Text>
       <Search />
       <Card className="mt-6">
-        <UsersTable users={users} />
+        <ArticleTable articlesList={articlesList} />
       </Card>
     </main>
   );

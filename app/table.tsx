@@ -7,33 +7,44 @@ import {
   TableCell,
   Text
 } from '@tremor/react';
+import { Article, TArticleList } from './types/article';
 
-interface User {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-}
-
-export default async function UsersTable({ users }: { users: User[] }) {
+export default async function ArticleTable({
+  articlesList
+}: {
+  articlesList: TArticleList | undefined;
+}) {
+  debugger;
+  if (!articlesList || articlesList.result.length === 0) {
+    return <div>No articles found.</div>;
+  }
   return (
     <Table>
       <TableHead>
         <TableRow>
-          <TableHeaderCell>Name</TableHeaderCell>
-          <TableHeaderCell>Username</TableHeaderCell>
-          <TableHeaderCell>Email</TableHeaderCell>
+          <TableHeaderCell>Title</TableHeaderCell>
+          <TableHeaderCell>Category</TableHeaderCell>
+          <TableHeaderCell>Public</TableHeaderCell>
+          <TableHeaderCell>Tags</TableHeaderCell>
+          
         </TableRow>
       </TableHead>
       <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell>{user.name}</TableCell>
+        {articlesList.result.map((article) => (
+          <TableRow key={article.id}>
             <TableCell>
-              <Text>{user.username}</Text>
+              <Text>{article.title}</Text>
             </TableCell>
             <TableCell>
-              <Text>{user.email}</Text>
+              <Text>{article.category}</Text>
+            </TableCell>
+            <TableCell>
+              <Text>{article.isPublic ? 'Yes' : 'No'}</Text>
+            </TableCell>
+            <TableCell>
+              {article.tags?.map((t) => (
+                <Text>{t}</Text>
+              ))}
             </TableCell>
           </TableRow>
         ))}
