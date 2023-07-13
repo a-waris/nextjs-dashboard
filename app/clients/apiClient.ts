@@ -47,7 +47,7 @@ class ApiClient {
   }
 
   async get<T>(path: string, isPublic: boolean = false): Promise<T> {
-    debugger
+    
     return fetchApi<T>(`${this.baseUrl}${path}`, {
       method: 'GET',
       headers: this.getHeaders(isPublic),

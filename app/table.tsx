@@ -14,7 +14,7 @@ export default async function ArticleTable({
 }: {
   articlesList: TArticleList | undefined;
 }) {
-  debugger;
+  ;
   if (!articlesList || articlesList.result.length === 0) {
     return <div>No articles found.</div>;
   }
